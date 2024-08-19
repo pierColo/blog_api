@@ -19,7 +19,6 @@ describe("E2E test", () => {
 					});
 				expect(response.status).toBe(201);
 				console.log(response.body.data.id);
-				await db.delete(blog).where(eq(blog.id, response.body.data.id));
 			});
 		});
 
@@ -37,8 +36,6 @@ describe("E2E test", () => {
 						slug: slug,
 					});
 				expect(response.status).toBe(400);
-
-				await db.delete(blog).where(eq(blog.slug, slug));
 			});
 		});
 	});
@@ -57,9 +54,6 @@ describe("E2E test", () => {
 						blogId,
 					});
 				expect(response.status).toBe(201);
-
-				await db.delete(post).where(eq(post.id, response.body.data.id));
-				await db.delete(blog).where(eq(blog.id, blogId));
 			});
 		});
 
@@ -97,7 +91,6 @@ describe("E2E test", () => {
 					name,
 					slug,
 				});
-				await db.delete(blog).where(eq(blog.id, blogId));
 			});
 		});
 		describe("Given a valid slug", () => {
@@ -119,7 +112,6 @@ describe("E2E test", () => {
 					name,
 					slug,
 				});
-				await db.delete(blog).where(eq(blog.id, blogId));
 			});
 		});
 		describe("Given an invalid blogId", () => {
@@ -174,8 +166,6 @@ describe("E2E test", () => {
 						},
 					],
 				});
-				await db.delete(post).where(eq(post.blogId, blogId));
-				await db.delete(blog).where(eq(blog.id, blogId));
 			});
 		});
 
@@ -185,5 +175,9 @@ describe("E2E test", () => {
 				expect(response.status).toBe(400);
 			});
 		});
+	});
+	afterAll(async () => {
+		await db.delete(post);
+		await db.delete(blog);
 	});
 });
