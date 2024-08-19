@@ -3,6 +3,7 @@ import type { Response } from "express";
 import logger from "../../utils/logger";
 import type { CreatePostSchemaReq } from "./post.schemas";
 import { createPost } from "./post.services";
+import { formatResponse } from "../../utils/utils";
 
 export const createPostHandler = async (
 	req: Request<CreatePostSchemaReq>,
@@ -10,9 +11,17 @@ export const createPostHandler = async (
 ) => {
 	try {
 		const postId = await createPost(req.body);
-		res.status(201).send(`Blog Created with ID:  ${postId}`);
+		res.status(201).json(
+			formatResponse({
+				status: 201,
+				message: `Post Created with ID:  ${postId}`,
+				data: { id: postId },
+			})
+		);
 	} catch (err) {
 		logger.error(err);
-		res.status(400).send("Unable to create Post");
+		res.status(400).json(
+			formatResponse({ status: 400, message: "Post not created" })
+		);
 	}
 };
