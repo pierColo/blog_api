@@ -3,8 +3,9 @@ import blogRouter from "./modules/blog/blog.routes";
 import postRouter from "./modules/post/post.routes";
 import bodyParser from "body-parser";
 import { errorHandler } from "@middlewares/errorHandling";
+import client from "@db/db.pg";
 
-const createServer = () => {
+const createServer = async () => {
 	const app = express();
 
 	app.get("/", (_, res) => {
@@ -16,6 +17,8 @@ const createServer = () => {
 	app.use("/api/blogs", blogRouter);
 	app.use("/api/posts", postRouter);
 
+	await client.connect();
+	
 	app.use((_, res) => {
 		res.status(404).send("Not Found");
 	});

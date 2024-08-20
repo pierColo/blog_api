@@ -3,8 +3,7 @@ import { db } from "@db/db";
 import { eq, or } from "drizzle-orm";
 
 import type { CreateBlogInputReq, GetBlogInputReq } from "./blog.schemas";
-import { view } from "drizzle-orm/sqlite-core";
-import { da } from "@faker-js/faker";
+
 
 export const createBlog = async (
 	data: CreateBlogInputReq["body"]
