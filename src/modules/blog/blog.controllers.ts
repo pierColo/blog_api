@@ -3,7 +3,7 @@ import type { Response } from "express";
 import type { CreateBlogInputReq, GetBlogInputReq } from "./blog.schemas";
 import logger from "../../utils/logger";
 import { formatResponse } from "../../utils/utils";
-import services from "@db/models";
+import services from "@db/services";
 
 export const createBlogHandler = async (
 	req: Request<CreateBlogInputReq>,

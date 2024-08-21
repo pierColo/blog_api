@@ -7,6 +7,7 @@ abstract class BlogServices {
 	abstract create(data: CreateBlogInputReq["body"]): Promise<string>;
 	abstract get(data: GetBlogInputReq["query"]): Promise<BlogType>;
 	abstract getById(id: string): Promise<BlogType>;
+	abstract deleteAll(): Promise<void>;
 }
 
 export class PgBlogServices implements BlogServices {
@@ -53,5 +54,8 @@ export class PgBlogServices implements BlogServices {
 			[id]
 		);
 		return rows[0];
+	}
+	async deleteAll(): Promise<void> {
+		await client.query("DELETE FROM blog");
 	}
 }

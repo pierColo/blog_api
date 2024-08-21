@@ -1,6 +1,5 @@
 import z from "zod";
 import { postContent } from "../post/post.schemas";
-import { or } from "drizzle-orm";
 
 export const createBlogSchema = z.object({
 	body: z

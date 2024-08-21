@@ -3,7 +3,7 @@ import type { Response } from "express";
 import logger from "../../utils/logger";
 import type { CreatePostSchemaReq } from "./post.schemas";
 import { formatResponse } from "../../utils/utils";
-import services from "@db/models";
+import services from "@db/services";
 
 export const createPostHandler = async (
 	req: Request<CreatePostSchemaReq>,

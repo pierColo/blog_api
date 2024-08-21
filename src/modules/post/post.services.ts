@@ -4,6 +4,7 @@ import client from "@db/db.pg";
 
 abstract class PostServices {
 	abstract create(data: CreatePost): Promise<string>;
+	abstract deleteAll(): Promise<void>;
 }
 
 export class PgPostServices implements PostServices {
@@ -14,5 +15,8 @@ export class PgPostServices implements PostServices {
 				[data.title, data.content, data.blogId]
 			)
 		).rows[0].id;
+	}
+	async deleteAll(): Promise<void> {
+		await client.query("DELETE FROM post");
 	}
 }

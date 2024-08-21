@@ -1,6 +1,5 @@
 import { PgBlogServices } from "../modules/blog/blog.services";
 import { PgPostServices } from "../modules/post/post.services";
-import { post } from "./schema";
 
 enum ProviderList {
 	PG = "pg",
