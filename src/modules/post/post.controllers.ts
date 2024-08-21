@@ -2,19 +2,19 @@ import type { Request } from "../../utils/express.types";
 import type { Response } from "express";
 import logger from "../../utils/logger";
 import type { CreatePostSchemaReq } from "./post.schemas";
-import { createPost } from "./post.services";
 import { formatResponse } from "../../utils/utils";
+import services from "@db/models";
 
 export const createPostHandler = async (
 	req: Request<CreatePostSchemaReq>,
 	res: Response
 ) => {
 	try {
-		const postId = await createPost(req.body);
+		const postId = await services.post.create(req.body);
 		res.status(201).json(
 			formatResponse({
 				status: 201,
-				message: `Post Created with ID:  ${postId}`,
+				message: `Post Created`,
 				data: { id: postId },
 			})
 		);

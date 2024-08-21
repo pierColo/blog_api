@@ -1,9 +1,18 @@
-import { db } from "@db/db";
-import { post } from "@db/schema";
 import type { CreatePost } from "./post.types";
 
-export const createPost = async (data: CreatePost): Promise<string> => {
-	return (
-		await db.insert(post).values(data).returning({ insertedId: post.id })
-	)[0].insertedId;
-};
+import client from "@db/db.pg";
+
+abstract class PostServices {
+	abstract create(data: CreatePost): Promise<string>;
+}
+
+export class PgPostServices implements PostServices {
+	async create(data: CreatePost): Promise<string> {
+		return (
+			await client.query(
+				"INSERT INTO post (title, content, blog_id) VALUES ($1, $2, $3) RETURNING id",
+				[data.title, data.content, data.blogId]
+			)
+		).rows[0].id;
+	}
+}

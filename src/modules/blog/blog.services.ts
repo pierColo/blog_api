@@ -1,76 +1,57 @@
-import { blog, post } from "@db/schema";
-import { db } from "@db/db";
-import { eq, or } from "drizzle-orm";
+import client from "@db/db.pg";
 
+import type { Blog as BlogType } from "./blog.types";
 import type { CreateBlogInputReq, GetBlogInputReq } from "./blog.schemas";
 
+abstract class BlogServices {
+	abstract create(data: CreateBlogInputReq["body"]): Promise<string>;
+	abstract get(data: GetBlogInputReq["query"]): Promise<BlogType>;
+	abstract getById(id: string): Promise<BlogType>;
+}
 
-export const createBlog = async (
-	data: CreateBlogInputReq["body"]
-): Promise<string> => {
-	return await db.transaction(async (db) => {
+export class PgBlogServices implements BlogServices {
+	async create(data: CreateBlogInputReq["body"]): Promise<string> {
 		const blogId = (
-			await db
-				.insert(blog)
-				.values({ ...data })
-				.returning({ insertedId: blog.id })
-		)[0].insertedId;
+			await client.query(
+				"INSERT INTO blog (name, slug) VALUES ($1, $2) RETURNING id",
+				[data.name, data.slug]
+			)
+		).rows[0].id;
 
 		if (data.posts) {
-			await db.insert(post).values(
-				data.posts.map((post) => ({
-					...post,
-					blogId,
-				}))
-			);
+			data.posts.forEach(async (post) => {
+				await client.query(
+					"INSERT INTO post (title, content, blog_id) VALUES ($1, $2, $3)",
+					[post.title, post.content, blogId]
+				);
+			});
 		}
 
 		return blogId;
-	});
-};
+	}
+	async get(data: GetBlogInputReq["query"]): Promise<BlogType> {
+		const { rows } = await client.query(
+			"SELECT * FROM blog WHERE id = $1 OR slug = $2",
+			[data.id, data.slug]
+		);
 
-export const getBlog = async (data: GetBlogInputReq["query"]) => {
-	const blogData = (
-		await db
-			.select({
-				id: blog.id,
-				name: blog.name,
-				slug: blog.slug,
-			})
-			.from(blog)
-			.where(
-				or(
-					data.id ? eq(blog.id, data.id) : undefined,
-					data.slug ? eq(blog.slug, data.slug) : undefined
-				)
-			)
-	)[0];
+		const blogData = rows[0];
+		if (data.includePosts) {
+			const { rows: posts } = await client.query(
+				"SELECT * FROM post WHERE blog_id = $1",
+				[blogData.id]
+			);
+			return { ...blogData, posts };
+		}
 
-	if (data.includePosts) {
-		const posts = await db
-			.select({
-				id: post.id,
-				title: post.title,
-				content: post.content,
-				viewCount: post.viewCount,
-			})
-			.from(post)
-			.where(eq(post.blogId, blogData.id))
-			.$dynamic();
-		return { ...blogData, posts };
+		return blogData;
 	}
 
-	return blogData;
-};
-
-export const getBlogById = async (
-	blogId: string
-): Promise<{
-	name: string;
-	slug: string;
-	id: string;
-}> => {
-	return (
-		await db.select().from(blog).where(eq(blog.id, blogId)).$dynamic()
-	)[0];
-};
+	async getById(id: string): Promise<BlogType> {
+		const { rows } = await client.query(
+			"SELECT * FROM blog WHERE id = $1",
+			[id]
+		);
+		return rows[0];
+	}
+}

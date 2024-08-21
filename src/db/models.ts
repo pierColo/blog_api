@@ -1,59 +1,22 @@
-import client from "@db/db.pg";
-import { da } from "@faker-js/faker";
+import { PgBlogServices } from "../modules/blog/blog.services";
+import { PgPostServices } from "../modules/post/post.services";
+import { post } from "./schema";
 
-type Blog = {
-    id: string;
-    slug: string
-    name: string
-    posts: Post[]
+enum ProviderList {
+	PG = "pg",
 }
+const generateServices = (provider: ProviderList) => {
+	switch (provider) {
+		case ProviderList.PG:
+			return {
+				blog: new PgBlogServices(),
+				post: new PgPostServices(),
+			};
+		default:
+			throw new Error("Invalid provider");
+	}
+};
 
-type Post = {
-    id: string
-    title?: string
-    content: string
-    viewCount: number
-    blogId: string
-}
+const services = generateServices(ProviderList.PG);
 
-const p = {
-    id: "",
-    title: "",
-    content: "",
-    viewCount: 0,
-    blogId: ""
-}
-
-const b = {
-    id: "",
-    slug: "",
-    name: "",
-    posts: [p]
-}
-type Select = keyof Blog
-
-
-abstract class Blog2<T> {
-    abstract create(): void
-    abstract get(data: [keyof T]): void
-}
-
-class PgBlog implements Blog2<Blog> {
-    create(): void {
-
-    }
-    get(data: [keyof Blog]): void {
-        const query = {
-            name: 'get-name',
-            text: 'SELECT ',
-            values: ['brianc'],
-            rowMode: 'array',
-          }
-        client.query("SELECT * FROM blog",data)}
-}
-    const tmp = new PgBlog()
-tmp.get(["id"])
-
-    const db = {
-        blog: new PgBlog()
-    }
+export default services;
