@@ -2,20 +2,20 @@ import type { Request } from "../../utils/express.types";
 import type { Response } from "express";
 import type { CreateBlogInputReq, GetBlogInputReq } from "./blog.schemas";
 import logger from "../../utils/logger";
-import { createBlog, getBlog } from "./blog.services";
 import { formatResponse } from "../../utils/utils";
+import services from "@db/services";
 
 export const createBlogHandler = async (
 	req: Request<CreateBlogInputReq>,
 	res: Response
 ) => {
 	try {
-		const blogId = await createBlog(req.body);
+		const blogId = await services.blog.create(req.body);
 
 		res.status(201).json(
 			formatResponse({
 				status: 201,
-				message: `Blog Created with ID:  ${blogId}`,
+				message: `Blog Created`,
 				data: { id: blogId },
 			})
 		);
@@ -32,7 +32,7 @@ export const getBlogHandler = async (
 	res: Response
 ) => {
 	try {
-		const blog = await getBlog(req.query);
+		const blog = await services.blog.get(req.query);
 
 		if (!blog) {
 			res.status(400).json(

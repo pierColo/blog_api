@@ -1,11 +1,8 @@
-import { db } from "@db/db";
 import createServer from "../src/server";
 import supertest from "supertest";
-import { blog, post } from "@db/schema";
-import { eq } from "drizzle-orm";
 import { faker } from "@faker-js/faker";
-import { createBlog } from "../src/modules/blog/blog.services";
-const app = createServer();
+import services from "@db/services";
+const app = await createServer();
 
 describe("E2E test", () => {
 	describe("Post /blogs", () => {
@@ -25,10 +22,12 @@ describe("E2E test", () => {
 		describe("Given an already used slug", () => {
 			it("should return 400 ", async () => {
 				const slug = faker.string.alphanumeric(10);
-				await createBlog({
+
+				await services.blog.create({
 					name: faker.string.alphanumeric(10),
-					slug: slug,
+					slug,
 				});
+
 				const response = await supertest(app)
 					.post("/api/blogs")
 					.send({
@@ -42,7 +41,7 @@ describe("E2E test", () => {
 	describe("Post /posts", () => {
 		describe("Given a valid title and content and a valid blogId", () => {
 			it("should return 200 and create a new post", async () => {
-				const blogId = await createBlog({
+				const blogId = await services.blog.create({
 					name: faker.string.alphanumeric(10),
 					slug: faker.string.alphanumeric(10),
 				});
@@ -77,10 +76,11 @@ describe("E2E test", () => {
 				const name = faker.string.alphanumeric(10);
 				const slug = faker.string.alphanumeric(10);
 
-				const blogId = await createBlog({
+				const blogId = await services.blog.create({
 					name,
 					slug,
 				});
+
 				const response = await supertest(app).get(
 					`/api/blogs?id=${blogId}`
 				);
@@ -98,10 +98,11 @@ describe("E2E test", () => {
 				const name = faker.string.alphanumeric(10);
 				const slug = faker.string.alphanumeric(10);
 
-				const blogId = await createBlog({
+				const blogId = await services.blog.create({
 					name,
 					slug,
 				});
+
 				const response = await supertest(app).get(
 					`/api/blogs?slug=${slug}`
 				);
@@ -128,20 +129,22 @@ describe("E2E test", () => {
 				const name = faker.string.alphanumeric(10);
 				const slug = faker.string.alphanumeric(10);
 
-				const blogId = await createBlog({
+				const blogId = await services.blog.create({
 					name,
 					slug,
-					posts: [
-						{
-							title: faker.string.alphanumeric(10),
-							content: faker.string.alphanumeric(10),
-						},
-						{
-							title: faker.string.alphanumeric(10),
-							content: faker.string.alphanumeric(10),
-						},
-					],
 				});
+
+				await services.post.create({
+					title: faker.string.alphanumeric(10),
+					content: faker.string.alphanumeric(10),
+					blogId,
+				});
+				await services.post.create({
+					title: faker.string.alphanumeric(10),
+					content: faker.string.alphanumeric(10),
+					blogId,
+				});
+
 				const response = await supertest(app).get(
 					`/api/blogs?id=${blogId}&includePosts=true`
 				);
@@ -157,12 +160,14 @@ describe("E2E test", () => {
 							title: expect.any(String),
 							content: expect.any(String),
 							viewCount: 0,
+							blog_id: blogId,
 						},
 						{
 							id: expect.any(String),
 							title: expect.any(String),
 							content: expect.any(String),
 							viewCount: 0,
+							blog_id: blogId,
 						},
 					],
 				});
@@ -177,7 +182,7 @@ describe("E2E test", () => {
 		});
 	});
 	afterAll(async () => {
-		await db.delete(post);
-		await db.delete(blog);
+		await services.post.deleteAll();
+		await services.blog.deleteAll();
 	});
 });

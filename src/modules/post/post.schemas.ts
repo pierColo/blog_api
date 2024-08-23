@@ -15,3 +15,5 @@ export const createPostSchema = z.object({
 });
 
 export type CreatePostSchemaReq = z.infer<typeof createPostSchema>;
+
+
