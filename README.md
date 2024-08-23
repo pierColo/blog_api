@@ -9,12 +9,8 @@ To run a new postgres db :
 ```
 docker-compose up
 ```
+Use the api.sql file to import the db schema
 
-Sync db to the code schema
-```
-bunx drizzle-kit generate
-bunx drizzle-kit migrate
-```
 To spin up the server
 ```
 npm run start
@@ -25,16 +21,8 @@ bun test
 ```
 # Bonus 
 
-Given the timing, I believe my implementation is not ideal for easily swapping databases, even if only the services are to change in the application. The types are custom, so there are no dependencies on a third-party tool like Drizzle.
+I do belive with my implementation is relativly easy to swap db, I created a service layer right before the database. I used an abstract class to force types for future implementations. The only requirements to change database is to create a new class with the new provider To be more secure about future. To add less possibilities to bugs I would also test the all class to make sure nothing breaks
 
-My possible solutions could be:
-
-- Use an ORM that facilitates database migration and minimizes the code changes required (such as Prisma, Drizzle ORM, or Sequelize).
-- Build an abstract class for each feature, which would be implemented by a class based on the database type. This approach would help with typing and testing since an abstract class has defined types and return values to satisfy, causing less "headache" when migrating.
-
-In both cases the migration would requires a review of the database schema and queries.
-
-Migrating databases, in my experience, is always painful, so I would ask more questions about the new type of database and make decisions based on that. Moving from a SQL database to a NoSQL one could be challenging in many cases.
 
 # Answers
 
@@ -46,7 +34,6 @@ Technologies chosen :
 - Postgresql 
 
 Library chosen :
-- drizzle ORM -> db integration
 - Zod -> validation
 - ExpressJS -> api framework
 - Pino -> Logging
@@ -72,7 +59,7 @@ add? When would you add them?
 ###
 The current application would require on a code level :
 - better error handling ( currently managed quickly)
-- better logging
+- better logging (http request, and more on depth with errors)
 - better security adjustments (es. purify post content from possible xss)
 - add analitycs and metrics tracking
 - better types especially for http responses
